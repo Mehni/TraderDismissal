@@ -46,9 +46,13 @@ namespace Dismiss_Trader
                     List<Transition> transitions = lord.Graph.transitions.ToList();
                     for (int i = 0; i < transitions.Count; i++)
                     {
-                        if (i == 7)
+                        foreach(Trigger trigger in transitions[i].triggers)
                         {
-                            transitions[i].triggers.Add(new Trigger_TicksPassed(20));
+                            if (trigger.GetType() == typeof(Trigger_TicksPassed))
+                            {
+                                transitions[i].triggers.Add(new Trigger_TicksPassed(20));
+                                break;
+                            }
                         }
                     }
                 }
