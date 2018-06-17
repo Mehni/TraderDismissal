@@ -27,7 +27,7 @@ namespace Dismiss_Trader
 
         //approach: find Lord transition that is the regular time-out and add another (very short) Trigger_TicksPassed. That'll then fire, and the traders will leave.
 
-        //other (failed) approaches: 
+        //other (failed) approaches:
         //- inheriting from LordJob_TradeWithColony and overriding the stategraph. Set a bool in the job, which works as a trigger. Still seems like the "correct" and OOP approach, but I suck at C#
         //- adding new LordToil_ExitMapAndEscortCarriers() & telling the lord to jump to it. (lord null, somehow not registered in graph?)
         //- Outright removing the lord. Works, but also removes the traderflag, defending at exit and the group behaviour. Bad.
@@ -41,14 +41,15 @@ namespace Dismiss_Trader
             {
                 Pawn actor = trade.actor;
                 if (this.Trader.CanTradeNow)
-				{
+                {
                     Lord lord = Trader.GetLord();
                     List<Transition> transitions = lord.Graph.transitions.ToList();
                     for (int i = 0; i < transitions.Count; i++)
                     {
                         foreach(Trigger trigger in transitions[i].triggers)
                         {
-                            if (trigger.GetType() == typeof(Trigger_TicksPassed))
+                            //if (trigger.GetType() == typeof(Trigger_TicksPassed))
+                            if (trigger is Trigger_TicksPassed) // less ugly, more nicer.
                             {
                                 transitions[i].triggers.Add(new Trigger_TicksPassed(20));
                                 break;
