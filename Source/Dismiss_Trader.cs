@@ -1,12 +1,7 @@
-﻿using System;
-using RimWorld;
+﻿using RimWorld;
 using Verse;
 using Harmony;
-using System.Collections;
 using System.Collections.Generic;
-using System.Reflection.Emit;
-using System.Linq;
-using System.Reflection;
 using UnityEngine;
 using Verse.AI;
 
@@ -29,35 +24,26 @@ namespace Dismiss_Trader
             {
                 Pawn localpawn = pawn;
                 LocalTargetInfo dest = target;
-                if (!pawn.CanReach(dest, PathEndMode.OnCell, Danger.Deadly, false, TraverseMode.ByPawn)) return;
-                else if (pawn.skills.GetSkill(SkillDefOf.Social).TotallyDisabled) return;
-                else
+                if (!pawn.CanReach(dest, PathEndMode.OnCell, Danger.Deadly)) return;
+                if (pawn.skills.GetSkill(SkillDefOf.Social).TotallyDisabled) return;
+                
+                Pawn pTarg = (Pawn)dest.Thing;
+                void Action()
                 {
-                    Pawn pTarg = (Pawn)dest.Thing;
-                    Action action = delegate
-                    {
-                        Job job = new Job(TraderDismissalJobDefs.DismissTrader, pTarg)
-                        {
-                            playerForced = true
-                        };
-                        localpawn.jobs.TryTakeOrderedJob(job, JobTag.Misc);
-                    };
-
-                    string str = string.Empty;
-                    if (pTarg.Faction != null)
-                    {
-                        str = " (" + pTarg.Faction.Name + ")";
-                    }
-
-                    string label = "GETOUT".Translate(new object[]
-                    {
-                        pTarg.LabelShort + ", " + pTarg.TraderKind.label
-                    }) + str;
-
-                    opts.Add(FloatMenuUtility.DecoratePrioritizedTask(new FloatMenuOption(label, action, MenuOptionPriority.InitiateSocial, null, dest.Thing, 0f, null, null), pawn, pTarg, "ReservedBy"));
+                    Job job = new Job(TraderDismissalJobDefs.DismissTrader, pTarg) { playerForced = true };
+                    localpawn.jobs.TryTakeOrderedJob(job);
                 }
+
+                string str = string.Empty;
+                if (pTarg.Faction != null)
+                {
+                    str = " (" + pTarg.Faction.Name + ")";
+                }
+
+                string label = "GETOUT".Translate(pTarg.LabelShort + ", " + pTarg.TraderKind.label) + str;
+
+                opts.Add(FloatMenuUtility.DecoratePrioritizedTask(new FloatMenuOption(label, Action, MenuOptionPriority.InitiateSocial, null, dest.Thing), pawn, pTarg));
             }
-            return;
         }
     }
 

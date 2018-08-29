@@ -12,18 +12,9 @@ namespace Dismiss_Trader
 {
     class JobDriver_DismissTrader : JobDriver
     {
-        private Pawn Trader
-        {
-            get
-            {
-                return (Pawn)base.TargetThingA;
-            }
-        }
+        private Pawn Trader => (Pawn)base.TargetThingA;
 
-        public override bool TryMakePreToilReservations()
-        {
-            return this.pawn.Reserve(this.Trader, this.job, 1, -1, null);
-        }
+        public override bool TryMakePreToilReservations(bool errorOnFailed) => this.pawn.Reserve(this.Trader, this.job);
 
         //approach: find Lord transition that is the regular time-out and add another (very short) Trigger_TicksPassed. That'll then fire, and the traders will leave.
 
@@ -37,21 +28,19 @@ namespace Dismiss_Trader
             this.FailOnDespawnedOrNull(TargetIndex.A);
             yield return Toils_Goto.GotoThing(TargetIndex.A, PathEndMode.Touch).FailOn(() => !this.Trader.CanTradeNow);
             Toil trade = new Toil();
-            trade.initAction = delegate
+            trade.initAction = () =>
             {
-                Pawn actor = trade.actor;
                 if (this.Trader.CanTradeNow)
                 {
                     Lord lord = Trader.GetLord();
                     List<Transition> transitions = lord.Graph.transitions.ToList();
-                    for (int i = 0; i < transitions.Count; i++)
+                    foreach (Transition transition in transitions)
                     {
-                        foreach(Trigger trigger in transitions[i].triggers)
+                        foreach (Trigger trigger in transition.triggers)
                         {
-                            //if (trigger.GetType() == typeof(Trigger_TicksPassed))
-                            if (trigger is Trigger_TicksPassed) // less ugly, more nicer.
+                            if (trigger is Trigger_TicksPassed)
                             {
-                                transitions[i].triggers.Add(new Trigger_TicksPassed(20));
+                                transition.triggers.Add(new Trigger_TicksPassed(20));
                                 break;
                             }
                         }
