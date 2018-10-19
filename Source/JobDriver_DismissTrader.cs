@@ -38,7 +38,7 @@ namespace Dismiss_Trader
                     {
                         foreach (Trigger trigger in transition.triggers)
                         {
-                            if (trigger is Trigger_TicksPassed && !transition.preActions.Any(x => x is TransitionAction_CheckGiveGift))
+                            if (trigger is Trigger_TicksPassed && transition.preActions.Any(x => x is TransitionAction_CheckGiveGift))
                             {
                                 transition.triggers.Add(new Trigger_TicksPassed(20));
                                 break;
